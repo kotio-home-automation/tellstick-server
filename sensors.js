@@ -1,26 +1,17 @@
 const telldus = require('telldus')
+const conf = require('./config')
 
-const configuredSensors = [
-  {
-    name: 'Parveke',
-    id: 136
-  },
-  {
-    name: 'Olohuone',
-    id: 135
-  }
-]
 
 function sensorData(cb) {
   telldus.getSensors((err, sensors) => {
     if (err) {
-      console.error('Error: ' + err);
+      console.error('Error while fetching tellstick sensors:', err);
       return null
     } else {
       const sensorIds = configuredSensors.map(s => s.id)
       const knownSensors = sensors.filter(s => sensorIds.includes(s.id))
-      const sdata = knownSensors.map(parseSensorData)
-      cb(sdata)
+      const data = knownSensors.map(parseSensorData)
+      cb(data)
     }
   })
 }
@@ -34,7 +25,7 @@ const parseSensorData = sensor => {
 }
 
 const parseTemperatureSensorData = sensor => {
-  const name = configuredSensors.find(s => s.id === sensor.id).name
+  const name = conf.configuredSensors.find(s => s.id === sensor.id).name
   const temperature = sensor.data.find(d => d.type === 'TEMPERATURE').value
 
   return {
@@ -45,7 +36,7 @@ const parseTemperatureSensorData = sensor => {
 }
 
 const parseHumiditySensorData = sensor => {
-  const name = configuredSensors.find(s => s.id === sensor.id).name
+  const name = conf.configuredSensors.find(s => s.id === sensor.id).name
   const temperature = sensor.data.find(d => d.type === 'TEMPERATURE').value
   const humidity = sensor.data.find(d => d.type === 'HUMIDITY').value
 
