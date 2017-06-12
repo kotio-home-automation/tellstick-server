@@ -1,37 +1,43 @@
 const telldus = require('telldus')
+const Promise = require('bluebird')
 
-function list(cb) {
-  telldus.getDevices((err, switches) => {
-    if (err) {
-      console.log('Error while fetching tellstick switches:', err)
-      return null
-    } else {
+const turnOnDevice = Promise.promisify(telldus.turnOn)
+const turnOffDevice = Promise.promisify(telldus.turnOff)
+const getDevices = Promise.promisify(telldus.getDevices)
+
+function list() {
+  return getDevices()
+    .then(switches => {
       const individualSwitches = switches.filter(deviceFilter).map(parseSwitchData)
       const switchGroups = switches.filter(groupFilter).map(parseSwitchData)
-      const data = groupSwitches(individualSwitches, switchGroups)
-      cb(data)
-    }
-  })
+      return groupSwitches(individualSwitches, switchGroups)
+    })
+    .catch(e => {
+      console.error('Error while listing telldus switches: ', e)
+      throw e
+    })
 }
 
 function turnOn(devices, cb) {
-  devices.map(deviceId => {
-    telldus.turnOn(deviceId, (err, status) => {
-      if (err) {
-        console.error(`Error switching on device ${deviceId}:`, err)
-      }
+  const devicesToTurnOn = devices.map(device => turnOnDevice(device))
+  const turnOnStatus = Promise.all(devicesToTurnOn)
+  return turnOnStatus
+    .then(() => list())
+    .catch(e => {
+      console.error('Error while turning on telldus switch: ', e)
+      throw e
     })
-  })
 }
 
 function turnOff(devices, cb) {
-  devices.map(deviceId => {
-    telldus.turnOff(deviceId, (err) => {
-      if (err) {
-        console.error(`Error switching off device ${deviceId}:`, err)
-      }
+  const devicesToTurnOff = devices.map(device => turnOffDevice(device))
+  const turnOffStatus = Promise.all(devicesToTurnOff)
+  return turnOffStatus
+    .then(() => list())
+    .catch(e => {
+      console.error('Error while turning off telldus switch: ', e)
+      throw e
     })
-  })
 }
 
 const parseSwitchData = tdSwitch => {
