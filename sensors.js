@@ -1,19 +1,20 @@
 const telldus = require('telldus')
 const conf = require('./config')
 
+const Promise = require('bluebird')
+const getSensors = Promise.promisify(telldus.getSensors)
 
 function sensorData(cb) {
-  telldus.getSensors((err, sensors) => {
-    if (err) {
-      console.error('Error while fetching tellstick sensors:', err);
-      return null
-    } else {
-      const sensorIds = configuredSensors.map(s => s.id)
+  return getSensors()
+    .then(sensors => {
+      const sensorIds = conf.configuredSensors.map(s => s.id)
       const knownSensors = sensors.filter(s => sensorIds.includes(s.id))
-      const data = knownSensors.map(parseSensorData)
-      cb(data)
-    }
-  })
+      return knownSensors.map(parseSensorData)
+    })
+    .catch(e => {
+      console.error('Error while listing sensors:', e)
+      throw e
+    })
 }
 
 const parseSensorData = sensor => {
