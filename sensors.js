@@ -4,7 +4,7 @@ const conf = require('./config')
 const Promise = require('bluebird')
 const getSensors = Promise.promisify(telldus.getSensors)
 
-function sensorData(cb) {
+function sensorData() {
   return getSensors()
     .then(sensors => {
       const sensorIds = conf.configuredSensors.map(s => s.id)
