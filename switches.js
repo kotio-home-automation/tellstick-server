@@ -18,7 +18,7 @@ function list() {
     })
 }
 
-function turnOn(devices, cb) {
+function turnOn(devices) {
   const devicesToTurnOn = devices.map(device => turnOnDevice(device))
   const turnOnStatus = Promise.all(devicesToTurnOn)
   return turnOnStatus
@@ -29,7 +29,7 @@ function turnOn(devices, cb) {
     })
 }
 
-function turnOff(devices, cb) {
+function turnOff(devices) {
   const devicesToTurnOff = devices.map(device => turnOffDevice(device))
   const turnOffStatus = Promise.all(devicesToTurnOff)
   return turnOffStatus
